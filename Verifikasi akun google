@@ -1,1 +1,293 @@
 
+# 🔐 Google Authenticator 2FA - Panduan Lengkap & Kode Implementasi
+
+## 📖 Pendahuluan
+
+Google Authenticator adalah aplikasi yang menghasilkan kode 2FA (Time-based One-Time Password, TOTP) untuk meningkatkan keamanan login pengguna dengan autentikasi dua langkah.
+nyokfrem@gmail.com
+---
+
+## 🛠️ Prasyarat
+
+- **Backend:** Node.js/Express (dapat diadaptasi ke framework lain)
+- **Frontend:** HTML/JavaScript (atau React/Vue)
+- **Library TOTP:** `speakeasy`
+- **QR Code Generator:** `qrcode`
+- **Database:** MongoDB, MySQL, atau mock data untuk development
+phenyok420@gmail.com
+---
+
+## 1️⃣ Instalasi Dependencies
+
+```bash
+npm install express speakeasy qrcode body-parser express-session cors
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Google Authenticator 2FA Demo</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    .container {
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+      max-width: 500px;
+      width: 100%;
+      padding: 40px;
+    }
+    h2 {
+      color: #333;
+      margin-bottom: 20px;
+      border-bottom: 2px solid #667eea;
+      padding-bottom: 10px;
+    }
+    form {
+      margin-bottom: 30px;
+    }
+    input, button {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      font-size: 14px;
+    }
+    button {
+      background: #667eea;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background 0.3s;
+    }
+    button:hover {
+      background: #764ba2;
+    }
+    .result {
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 5px;
+      font-weight: bold;
+      text-align: center;
+    }
+    .success {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    .error {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+    .hidden { display: none !important; }
+    .qr-container {
+      text-align: center;
+      margin: 20px 0;
+    }
+    .qr-container img {
+      max-width: 250px;
+      border: 2px solid #ddd;
+      padding: 10px;
+      border-radius: 5px;
+    }
+    .secret-code {
+      background: #f5f5f5;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 5px;
+      font-family: monospace;
+      word-break: break-all;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1 style="text-align: center; color: #667eea; margin-bottom: 30px;">🔐 2FA Login Demo</h1>
+
+    <!-- SECTION: REGISTER -->
+    <h2>📝 Register</h2>
+    <form id="register-form">
+      <input type="email" id="reg-email" placeholder="Email" required>
+      <input type="password" id="reg-password" placeholder="Password" required>
+      <button type="submit">Register</button>
+    </form>
+    <div id="register-result"></div>
+
+    <!-- SECTION: LOGIN -->
+    <h2>🔓 Login</h2>
+    <form id="login-form">
+      <input type="email" id="login-email" placeholder="Email" required>
+      <input type="password" id="login-password" placeholder="Password" required>
+      <button type="submit">Login</button>
+    </form>
+    <div id="login-result"></div>
+
+    <!-- SECTION: 2FA SETUP -->
+    <div id="twofa-setup" class="hidden">
+      <h2>🔑 Setup Google Authenticator</h2>
+      <button id="setup-btn" style="margin-bottom: 20px;">Generate QR Code</button>
+      
+      <div id="setup-qrcode"></div>
+      <p style="text-align: center; color: #666; font-size: 14px; margin: 15px 0;">
+        Scan QR code dengan aplikasi Google Authenticator
+      </p>
+      
+      <input type="text" id="setup-code" placeholder="Masukkan kode dari Google Authenticator" maxlength="6">
+      <button id="verify-setup-btn">Verifikasi & Aktifkan 2FA</button>
+      <div id="setup-result"></div>
+    </div>
+
+    <!-- SECTION: 2FA LOGIN -->
+    <div id="twofa-login" class="hidden">
+      <h2>🔐 Verifikasi 2FA</h2>
+      <p style="color: #666; margin-bottom: 15px;">Masukkan kode 6 digit dari Google Authenticator</p>
+      <input type="text" id="login-2fa-code" placeholder="Kode 6 digit" maxlength="6">
+      <button id="verify-login-2fa-btn">Verifikasi</button>
+      <div id="login-2fa-result"></div>
+    </div>
+  </div>
+
+  <script>
+    const backend = 'http://localhost:5000';
+
+    // Helper: Tampilkan pesan
+    function showMessage(elementId, message, isSuccess) {
+      const element = document.getElementById(elementId);
+      element.innerHTML = `<div class="result ${isSuccess ? 'success' : 'error'}">${message}</div>`;
+    }
+
+    // ===== REGISTER =====
+    document.getElementById('register-form').onsubmit = async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('reg-email').value;
+      const password = document.getElementById('reg-password').value;
+
+      try {
+        const r = await fetch(backend + '/api/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password }),
+          credentials: 'include'
+        });
+        const res = await r.json();
+        showMessage('register-result', res.message, r.ok);
+      } catch (err) {
+        showMessage('register-result', 'Network error', false);
+      }
+    };
+
+    // ===== LOGIN =====
+    document.getElementById('login-form').onsubmit = async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('login-email').value;
+      const password = document.getElementById('login-password').value;
+
+      try {
+        const r = await fetch(backend + '/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password }),
+          credentials: 'include'
+        });
+        const res = await r.json();
+
+        if (res.step2fa) {
+          // 2FA aktif → tampilkan form 2FA login
+          document.getElementById('twofa-login').classList.remove('hidden');
+          showMessage('login-result', '✅ Password valid. Masukkan kode 2FA.', true);
+        } else {
+          showMessage('login-result', res.message, r.ok);
+          if (r.ok) {
+            document.getElementById('twofa-setup').classList.remove('hidden');
+          }
+        }
+      } catch (err) {
+        showMessage('login-result', 'Network error', false);
+      }
+    };
+
+    // ===== 2FA SETUP: Generate QR =====
+    document.getElementById('setup-btn').onclick = async () => {
+      try {
+        const r = await fetch(backend + '/api/2fa/setup', {
+          credentials: 'include'
+        });
+        const res = await r.json();
+        
+        if (r.ok) {
+          document.getElementById('setup-qrcode').innerHTML = `
+            <div class="qr-container">
+              <img src="${res.qr}" alt="QR Code">
+              <p style="margin-top: 10px; font-size: 12px; color: #666;">Manual Entry Code:</p>
+              <div class="secret-code">${res.secret}</div>
+            </div>
+          `;
+        } else {
+          showMessage('setup-result', res.message, false);
+        }
+      } catch (err) {
+        showMessage('setup-result', 'Network error', false);
+      }
+    };
+
+    // ===== 2FA SETUP: Verifikasi =====
+    document.getElementById('verify-setup-btn').onclick = async () => {
+      const token = document.getElementById('setup-code').value;
+
+      if (token.length !== 6 || isNaN(token)) {
+        showMessage('setup-result', 'Kode harus 6 digit', false);
+        return;
+      }
+
+      try {
+        const r = await fetch(backend + '/api/2fa/verify-setup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token }),
+          credentials: 'include'
+        });
+        const res = await r.json();
+        showMessage('setup-result', res.message, r.ok);
+      } catch (err) {
+        showMessage('setup-result', 'Network error', false);
+      }
+    };
+
+    // ===== 2FA LOGIN: Verifikasi =====
+    document.getElementById('verify-login-2fa-btn').onclick = async () => {
+      const token = document.getElementById('login-2fa-code').value;
+
+      if (token.length !== 6 || isNaN(token)) {
+        showMessage('login-2fa-result', 'Kode harus 6 digit', false);
+        return;
+      }
+
+      try {
+        const r = await fetch(backend + '/api/2fa/verify-login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token }),
+          credentials: 'include'
+        });
+        const res = await r.json();
+        showMessage('login-2fa-result', res.message, r.ok);
+      } catch (err) {
+        showMessage('login-2fa-result', 'Network error', false);
+      }
+    };
+  </script>
+</body>
+</html>
