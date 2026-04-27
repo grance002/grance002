@@ -1,0 +1,114 @@
+{
+    // Gunakan IntelliSense untuk informasi tentang kemungkinan atribut.
+    // Arahkan kursor untuk melihat deskripsi atribut yang ada.
+    // Informasi lebih lanjut dapat ditemukan di sini: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Launch Chrome",
+            "request": "launch",
+            "type": "chrome",
+            "url": "http://localhost:8080",
+            "webRoot": "nyokfrem@gmail.com"
+        },
+        {
+            "command": "npm start",
+            "name": "Run npm start",
+            "request": "launch",
+            "type": "node-terminal"
+        },Verifikasi akun {{
+            "args": [
+                "--extensionDevelopmentPath=${workspaceFolder}"
+            ],
+            "name": "Launch Extension",
+            "outFiles": [
+                "${workspaceFolder}/out/**/*.js"
+            ],
+            "preLaunchTask": "npm",
+            "request": "launch",
+            "type": "extensionHost"
+        }, nyokfrem@gmail.com
+            "args": [KODE verifikasi akun google authenticator
+                {phenyok420@gmail.com
+                    "args": [
+                        "--extensionDevelopmentPath=${workspaceFolder}"
+                    ],
+                    "name": "Launch Extension",
+                    "outFiles": [
+                        "${workspaceFolder}/out/**/*.js"
+                    ],
+                    "preLaunchTask": "npm",
+                    "request": "launch",
+                    "type": "extensionHost"
+                },"
+            ],
+            "name": "Gulp goo{
+                "args": [
+                    "--extensionDevelopmentPath=${workspaceFolder}"
+                ],
+                "name": "Launch Extension",
+                "outFiles": [
+                    "${workspaceFolder}/out/**/*.js"
+                ],
+                "preLaunchTask": "npm",
+                "request": "launch",
+                "type": "extensionHost"
+            },",
+            "program": "${workspaceFolder}/node_modules/gulp/bin/gulp.js",
+            "request": "launch",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "type": "node"
+        },
+        {
+            "type": "chrome",
+            "request": "launch",
+            "name": "Launch Chrome against localhost",
+            "url": "http://localhost:8080",
+            "webRoot": "${workspaceFolder}"
+        }
+    ]
+}function isValidToken(token) {
+      return /^\d{6}$/.test(token);
+      }
+
+      async function fetchWithTimeout(url, options = {}, timeout = 10000) {
+        const controller = new AbortController();
+          const id = setTimeout(() => controller.abort(), timeout);
+            
+              try {
+                  const response = await fetch(url, { ...options, signal: controller.signal });
+                      clearTimeout(id);
+                          return response;
+                            } catch (err) {
+                                clearTimeout(id);
+                                    console.error('Fetch error:', err);
+                                        throw err;
+                                          }
+                                          }
+
+                                          // Usage in your code:
+                                          if (!isValidToken(token)) {
+                                            showMessage('setup-result', '❌ Kode harus 6 digit numerik', false);
+                                              return;
+                                              }
+
+                                              const button = document.getElementById('verify-setup-btn');
+                                              button.disabled = true;
+
+                                              try {
+                                                const r = await fetchWithTimeout(backend + '/api/2fa/verify-setup', {
+                                                    method: 'POST',
+                                                        headers: { 'Content-Type': 'application/json' },
+                                                            body: JSON.stringify({ token }),
+                                                                credentials: 'include'
+                                                                  });
+                                                                    const res = await r.json();
+                                                                      showMessage('setup-result', res.message, r.ok);
+                                                                      } catch (err) {
+                                                                        showMessage('setup-result', `❌ Error: ${err.message}`, false);
+                                                                        } finally {
+                                                                          button.disabled = false;
+                                                                          }Regenerate 2FA - Re-enable Google Authenticator for the nyokfrem@gmail.com account
+}
