@@ -1,0 +1,117 @@
+### Datagram asli
+- Total length: `472` oktet
+- Header: `20` oktet
+- Data: `452` oktet
+
+### Fragmen 1
+- Total length: `268` oktet
+- Header: `20` oktet
+- Data: `248` oktet
+- Flags: `MF = 1`
+- Fragment offset: `0`
+
+### Fragmen 2
+- Total length: `224` oktet
+- Header: `20` oktet
+- Data: `204` oktet
+- Flags: `MF = 0`
+- Fragment offset: `31`  (karena `248 / 8 = 31`)
+
+---
+
+
+
+
+      Prioritas: 5
+            Aliran: 0
+                  Keandalan: 1
+                        S/R: 1
+                              Kecepatan: 1
+
+                                  Pemetaan parameter-parameter ini ke parameter yang tersedia untuk ARPANET.
+                                      akan mengatur bit prioritas ARPANET menjadi aktif karena Internet
+                                          Prioritasnya berada di bagian atas rentangnya, untuk memilih yang tidak terkendali.
+                                              pesan karena persyaratan kecepatan dan keandalan sama dan
+                                                  Kecepatan lebih diutamakan.
+
+                                                      Bagan berikut menyajikan pemetaan yang direkomendasikan dari
+                                                          jenis layanan protokol internet ke dalam parameter layanan
+                                                              sebenarnya tersedia di ARPANET, PRNET, dan SATNET:
+
+                                                                    +------------+----------+----------+----------+----------+
+                                                                          |Aplikasi | INTERNET | ARPANET | PRNET | SATNET |
+                                                                                +------------+----------+----------+----------+----------+
+                                                                                      |TELNET |S/D:stream| T: 3 | R: ptp | T: block |
+                                                                                            | aktif | R:normal| S: S | A: tidak | D: min |
+                                                                                                  | TCP | S/R: kecepatan | | | H: tak terhingga |
+                                                                                                        | | S: cepat | | | R: tidak |
+                                                                                                              +------------+----------+----------+----------+----------+
+                                                                                                                    |FTP |S/D:stream| T: 0 | R: ptp | T: blok |
+                                                                                                                          | aktif | R: normal | S: M | A: tidak | D: normal |
+                                                                                                                                | TCP |S/R:rlblt | | | H: tak terhingga |
+                                                                                                                                      | | S:normal| | | R: tidak |
+                                                                                                                                            +------------+----------+----------+----------+----------+
+                                                                                                                                                  |interaktif |S/D:strm* | T: 3 | R: ptp | T: stream|
+                                                                                                                                                        |pita sempit | R: paling sedikit | S: S | A: tidak | D: minimal |
+                                                                                                                                                              | ucapan | P: kecepatan | | | H: pendek |
+                                                                                                                                                                    | | S:secepatnya | | | R: tidak |
+                                                                                                                                                                          +------------+----------+----------+----------+----------+
+                                                                                                                                                                                |datagram |S/D:dtgrm | T: 3 atau 0| R:stasiun| T: blok |
+                                                                                                                                                                                      | | R:normal| S: S atau M| A: tidak | D: min |
+                                                                                                                                                                                            | |S/R: kecepatan | | | H: pendek |
+                                                                                                                                                                                                  | | S: cepat | | | R: tidak |
+                                                                                                                                                                                                        +------------+----------+----------+----------+----------+
+                                                                                                                                                                                                               kunci: S/D=strm/dtgrm T=tipe R=rute T=tipe
+                                                                                                                                                                                                                              R=keandalan S=ukuran A=kesalahan D=penundaan
+                                                                                                                                                                                                                                             S/R=kecepatan/rlblt H=waktu penahanan
+                                                                                                                                                                                                                                                            S=kecepatan R=keandalan
+                                                                                                                                                                                                                                                                           *=membutuhkan pengaturan stream
+
+
+
+                       (1) BUFID <- sumber|tujuan|protokol|identifikasi;
+                               (2) JIKA FO = 0 DAN MF = 0
+                                       (3) MAKA JIKA buffer dengan BUFID dialokasikan
+                                               (4) KEMUDIAN bilas semua perakitan ulang untuk BUFID ini;
+                                                       (5) Kirim datagram ke langkah selanjutnya; SELESAI.
+                                                               (6) JIKA tidak ada buffer dengan BUFID yang dialokasikan
+                                                                       (7) KEMUDIAN alokasikan sumber daya perakitan ulang
+                                                                                                    dengan BUFID;
+                                                                                                                                 TIMER <- TLB; TDL <- 0;
+                                                                                                                                         (8) masukkan data dari fragmen ke dalam buffer data dengan
+                                                                                                                                                              BUFID dari oktet FO*8 ke
+                                                                                                                                                                                                       oktet (TL-(IHL*4))+FO*8;
+                                                                                                                                                                                                               (9) mengatur bit RCVBT dari FO
+                                                                                                                                                                                                                                                       ke FO+((TL-(IHL*4)+7)/8);
+                                                                                                                                                                                                                                                               (10) JIKA MF = 0 MAKA TDL <- TL-(IHL*4)+(FO*8)
+                                                                                                                                                                                                                                                                       (11) JIKA FO = 0 MAKA masukkan header ke dalam buffer header
+                                                                                                                                                                                                                                                                               (12) JIKA TDL # 0
+                                                                                                                                                                                                                                                                                       (13) DAN semua bit RCVBT dari 0
+                                                                                                                                                                                                                                                                                                                                    ke (TDL+7)/8 ditetapkan
+                                                                                                                                                                                                                                                                                                                                            (14) MAKA TL <- TDL+(IHL*4)
+                                                                                                                                                                                                                                                                                                                                                    (15) Kirim datagram ke langkah selanjutnya;
+                                                                                                                                                                                                                                                                                                                                                            (16) bebaskan semua sumber daya perakitan ulang
+                                                                                                                                                                                                                                                                                                                                                                                         untuk BUFID ini; SELESAI.
+                                                                                                                                                                                                                                                                                                                                                                                                 (17) TIMER <- MAX(TIMER,TTL);
+                                                                                                                                                                                                                                                                                                                                                                                                         (18) menyerah sampai fragmen atau penghitung waktu berikutnya habis;
+                                                                                                                                                                                                                                                                                                                                                                                                                 (19) timer berakhir: flush all reassembly with this BUFID; DONE.
+
+                                                                                                                                                                                                                                                                                                                                                                                                                       Jika dua fragmen atau lebih mengandung data yang sama
+                                                                                                                                                                                                                                                                                                                                                                                                                             baik secara identik atau melalui tumpang tindih sebagian, prosedur ini
+                                                                                                                                                                                                                                                                                                                                                                                                                                   akan menggunakan salinan yang lebih baru yang ada di buffer data dan
+                                                                                                                                                                                                                                                                                                                                                                                                                                         Datagram telah terkirim.
+
+                                                                                                                                                                                                                                                                                                                                                                                                                                           Identifikasi
+
+                                                                                                                                                                                                                                                                                                                                                                                                                                               Pemilihan pengidentifikasi untuk sebuah datagram didasarkan pada kebutuhan untuk
+                                                                                                                                                                                                                                                                                                                                                                                                                                                   menyediakan cara untuk mengidentifikasi secara unik fragmen-fragmen tertentu.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                       Datagram. Modul protokol yang menyusun fragmen menilai fragmen.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                           dianggap termasuk dalam datagram yang sama jika memiliki sumber yang sama,
+                                                                                                                                                                                                                                                                                                                                                                                                                                                               Tujuan, protokol, dan pengidentifikasi. Dengan demikian, pengirim harus memilih.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                   Pengidentifikasi harus unik untuk pasangan sumber dan tujuan ini dan
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                       protokol untuk waktu datagram (atau fragmen apa pun darinya) dapat
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                           hidup di internet.
+
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                               Jadi, tampaknya modul protokol pengirim perlu menyimpan sebuah tabel.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   dari Pengidentifikasi, satu entri untuk setiap tujuan yang telah dikomunikasikan
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       dengan masa pakai paket maksimum terakhir untuk internet.                                                                                                                                                                                                                                                            
